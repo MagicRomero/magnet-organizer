@@ -1,7 +1,8 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const isDev = require("electron-is-dev");
 const path = require("path");
 const url = require("url");
+const Store = require("electron-store");
 
 function createWindow() {
   // Create the browser window.
@@ -10,6 +11,7 @@ function createWindow() {
     height: 860,
     webPreferences: {
       nodeIntegration: true,
+      enableRemoteModule: true,
     },
   });
 
@@ -52,3 +54,53 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+const schema = {
+  author: {
+    type: "array",
+    items: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          pattern: "([a-zA-Z]|\\s)+",
+        },
+        category: {
+          type: "string",
+          default: "friend",
+        },
+      },
+      required: ["name", "category"],
+      additionalProperties: false,
+    },
+  },
+  magnets: {
+    type: "array",
+    items: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          pattern: "(\\w|\\s)+",
+        },
+        image: {
+          type: ["string", "null"],
+          format: "uri",
+        },
+        date: {
+          type: "string",
+          format: "date-time",
+          default: new Date().toJSON(),
+        },
+      },
+      required: ["name", "date"],
+      additionalProperties: false,
+    },
+    default: [],
+  },
+};
+
+const store = new Store({ schema });
+
+ipcMain.handle("getStoreValue", (event, key) => store.get(key));
+ipcMain.handle("setStoreValue", (event, key, value) => store.set(key, value));

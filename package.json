@@ -1,18 +1,35 @@
 {
   "name": "magnet-organizer",
   "version": "0.1.0",
-  "author": "MagicRomero",
-  "description": "Organize your magnets being helped with world map",
-  "main": "public/electron.js",
+  "author": {
+    "name": "MagicRomero",
+    "email": "magicromero@protonmail.com"
+  },
+  "description": "Organize your magnets being helped with the updated world map",
+  "main": "public/electron-main.js",
+  "homepage": "./",
   "private": true,
+  "build": {
+    "appId": "magnet-organizer",
+    "win": {
+      "target": "nsis",
+      "asar": false
+    },
+    "buildVersion": "0.1.1"
+  },
   "dependencies": {
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "cross-env": "^7.0.2",
     "electron-is-dev": "^1.2.0",
+    "electron-store": "^6.0.0",
+    "material-table": "^1.69.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3"
   },
   "devDependencies": {
