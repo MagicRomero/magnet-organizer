@@ -27,11 +27,11 @@ const MagnetTable = () => {
     const new_magnets = magnets.concat([newMagnet]);
 
     await DatabaseHandler.setStoreValue("magnets", new_magnets);
-
     fetchMagnets();
   };
 
   const updateMagnet = async (updatedMagnet) => {
+    console.log("updated magnet: ", updatedMagnet);
     await DatabaseHandler.updateStoreValue("magnets", updatedMagnet);
     fetchMagnets();
   };
@@ -39,12 +39,7 @@ const MagnetTable = () => {
   const deleteMagnet = async (event, magnetToDelete) => {
     if (window.confirm(`¿Quieres borrar el iman "${magnetToDelete.name}"?`)) {
       await DatabaseHandler.deleteStoreValue("magnets", magnetToDelete);
-
-      const updatedMagnets = magnets.filter(
-        (magnet) => magnet.id !== magnetToDelete.id
-      );
-
-      setMagnets(updatedMagnets);
+      fetchMagnets();
     }
   };
 

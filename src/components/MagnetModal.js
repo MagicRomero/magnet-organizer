@@ -41,7 +41,7 @@ const MagnetModal = ({
   const handleDateChange = (date) => {
     setForm({
       ...form,
-      date,
+      date: new Date(date).toJSON(),
     });
   };
 

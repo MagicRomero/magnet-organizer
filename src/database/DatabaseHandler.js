@@ -13,14 +13,8 @@ class DatabaseHandler {
     return await ipcRenderer.invoke("findStoreValue", item, target);
   }
 
-  static async updateStoreValue(item, target) {
-    const itemToUpdate = await this.findStoreValue(item, target);
-
-    if (itemToUpdate) {
-      return await ipcRenderer.invoke("updateStoreValue", item, target);
-    }
-
-    return null;
+  static async updateStoreValue(item, newValue) {
+    return await ipcRenderer.invoke("updateStoreValue", item, newValue);
   }
 
   static async deleteStoreValue(item, target = false) {
@@ -31,10 +25,7 @@ class DatabaseHandler {
     const itemToDelete = await this.findStoreValue(item, target);
 
     if (itemToDelete) {
-      return await ipcRenderer.invoke("deleteStoreValue", item, {
-        key: target.key,
-        value: target.value,
-      });
+      return await ipcRenderer.invoke("deleteStoreValue", item, itemToDelete);
     }
 
     return null;

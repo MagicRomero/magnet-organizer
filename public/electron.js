@@ -113,13 +113,12 @@ ipcMain.handle("getStoreValue", (event, item) => store.get(item));
 ipcMain.handle("setStoreValue", (event, item, value) => store.set(item, value));
 ipcMain.handle("findStoreValue", (event, item, target = null) => {
   const items = store.get(item);
-  let result = items;
 
   if (target) {
-    result = items.find((item) => item[target.key] === target.value);
+    return items.find((item) => item.id === target.id);
   }
 
-  return result;
+  return items;
 });
 
 ipcMain.handle("updateStoreValue", (event, item, newValue) => {
@@ -143,9 +142,7 @@ ipcMain.handle("deleteStoreValue", (event, item, target = null) => {
 
   const items = store.get(item);
 
-  const itemsWithoutTheTarget = items.filter(
-    (item) => item[target.key] === target.value
-  );
+  const itemsWithoutTheTarget = items.filter((item) => item.id !== target.id);
 
   return store.set(item, itemsWithoutTheTarget);
 });
