@@ -13,6 +13,16 @@ class DatabaseHandler {
     return await ipcRenderer.invoke("findStoreValue", item, target);
   }
 
+  static async updateStoreValue(item, target) {
+    const itemToUpdate = await this.findStoreValue(item, target);
+
+    if (itemToUpdate) {
+      return await ipcRenderer.invoke("updateStoreValue", item, target);
+    }
+
+    return null;
+  }
+
   static async deleteStoreValue(item, target = false) {
     if (!target) {
       return await ipcRenderer.invoke("deleteStoreValue", item);
