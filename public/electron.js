@@ -61,6 +61,9 @@ const schema = {
     items: {
       type: "object",
       properties: {
+        id: {
+          type: "string",
+        },
         name: {
           type: "string",
           pattern: "([a-zA-Z]|\\s)+",
@@ -70,7 +73,7 @@ const schema = {
           default: "friend",
         },
       },
-      required: ["name", "category"],
+      required: ["id", "name", "category"],
       additionalProperties: false,
     },
   },
@@ -79,6 +82,9 @@ const schema = {
     items: {
       type: "object",
       properties: {
+        id: {
+          type: "string",
+        },
         name: {
           type: "string",
           pattern: "(\\w|\\s)+",
@@ -93,8 +99,8 @@ const schema = {
           default: new Date().toJSON(),
         },
       },
-      required: ["name", "date"],
-      additionalProperties: false,
+      required: ["id", "name", "date"],
+      additionalProperties: true,
     },
     default: [],
   },
@@ -102,5 +108,30 @@ const schema = {
 
 const store = new Store({ schema });
 
-ipcMain.handle("getStoreValue", (event, key) => store.get(key));
-ipcMain.handle("setStoreValue", (event, key, value) => store.set(key, value));
+ipcMain.handle("clearStore", (event, listener) => store.clear());
+ipcMain.handle("getStoreValue", (event, item) => store.get(item));
+ipcMain.handle("setStoreValue", (event, item, value) => store.set(item, value));
+ipcMain.handle("findStoreValue", (event, item, target = null) => {
+  const items = store.get(item);
+  let result = items;
+
+  if (target) {
+    result = items.find((item) => item[target.key] === target.value);
+  }
+
+  return result;
+});
+
+ipcMain.handle("deleteStoreValue", (event, item, target = null) => {
+  if (!target) {
+    return store.delete(item);
+  }
+
+  const items = store.get(item);
+
+  const itemsWithoutTheTarget = items.filter(
+    (item) => item[target.key] === target.value
+  );
+
+  return store.set(item, itemsWithoutTheTarget);
+});
