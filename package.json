@@ -37,6 +37,7 @@
     "cross-env": "^7.0.2",
     "electron-is-dev": "^1.2.0",
     "electron-store": "^6.0.0",
+    "file-saver": "^2.0.2",
     "material-table": "^1.69.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

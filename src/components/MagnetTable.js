@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import MaterialTable from "material-table";
 import DatabaseHandler from "../database/DatabaseHandler";
 import MagnetModal from "./MagnetModal";
+import { saveAs } from "file-saver";
 
 const MagnetTable = () => {
   const [showModal, setShowModal] = useState(false);
@@ -31,7 +32,6 @@ const MagnetTable = () => {
   };
 
   const updateMagnet = async (updatedMagnet) => {
-    console.log("updated magnet: ", updatedMagnet);
     await DatabaseHandler.updateStoreValue("magnets", updatedMagnet);
     fetchMagnets();
   };
@@ -54,6 +54,13 @@ const MagnetTable = () => {
     }
 
     setShowModal(!showModal);
+  };
+
+  const downloadImage = (event, magnet) => {
+    console.log("magnet data: ", magnet);
+    if (magnet.image) {
+      saveAs(magnet.image, magnet.name + ".png");
+    }
   };
 
   return (
@@ -80,7 +87,22 @@ const MagnetTable = () => {
         pageSize={10}
         pageSizeOptions={[10, 20, 50]}
         columns={[
-          { title: "Imagen", field: "image" },
+          {
+            title: "Imagen",
+            field: "image",
+            render: (rowData) => (
+              <img
+                onClick={(event) => downloadImage(event, rowData)}
+                alt={rowData.name}
+                src={rowData.image}
+                style={{
+                  cursor: "pointer",
+                  width: 150,
+                  height: "auto",
+                }}
+              />
+            ),
+          },
           { title: "Nombre", field: "name" },
           { title: "Fecha", field: "date" },
         ]}
@@ -88,6 +110,24 @@ const MagnetTable = () => {
         title="Lista de imanes conseguidos"
         options={{
           actionsColumnIndex: -1,
+        }}
+        localization={{
+          header: {
+            actions: "Acciones",
+          },
+          body: {
+            emptyDataSourceMessage: "No hay imanes guardados",
+          },
+          pagination: {
+            firstAriaLabel: "Primera página",
+            previousAriaLabel: "Anterior",
+            nextAriaLabel: "Siguiente",
+          },
+          toolbar: {
+            searchTooltip: "Buscar",
+            searchAriaLabel: "Buscar",
+            searchPlaceholder: "Buscar...",
+          },
         }}
       />
       <MagnetModal
