@@ -2,7 +2,6 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const isDev = require("electron-is-dev");
 const path = require("path");
 const url = require("url");
-const Store = require("electron-store");
 
 function createWindow() {
   // Create the browser window.
@@ -10,6 +9,7 @@ function createWindow() {
     width: 1200,
     height: 860,
     webPreferences: {
+      webSecurity: !isDev,
       nodeIntegration: true,
       enableRemoteModule: true,
       worldSafeExecuteJavaScript: true,
@@ -56,94 +56,7 @@ app.on("activate", () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
-const schema = {
-  author: {
-    type: "array",
-    items: {
-      type: "object",
-      properties: {
-        id: {
-          type: "string",
-        },
-        name: {
-          type: "string",
-          pattern: "([a-zA-Z]|\\s)+",
-        },
-        category: {
-          type: "string",
-          default: "friend",
-        },
-      },
-      required: ["id", "name", "category"],
-      additionalProperties: false,
-    },
-  },
-  magnets: {
-    type: "array",
-    items: {
-      type: "object",
-      properties: {
-        id: {
-          type: "string",
-        },
-        name: {
-          type: "string",
-          pattern: "(\\w|\\s)+",
-        },
-        image: {
-          type: ["string", "null"],
-          format: "uri",
-        },
-        date: {
-          type: "string",
-          format: "date-time",
-          default: new Date().toJSON(),
-        },
-      },
-      required: ["id", "name", "date"],
-      additionalProperties: true,
-    },
-    default: [],
-  },
-};
+const store = require("./modules/store");
 
-const store = new Store({ schema });
-
-ipcMain.handle("clearStore", (event, listener) => store.clear());
-ipcMain.handle("getStoreValue", (event, item) => store.get(item));
-ipcMain.handle("setStoreValue", (event, item, value) => store.set(item, value));
-ipcMain.handle("findStoreValue", (event, item, target = null) => {
-  const items = store.get(item);
-
-  if (target) {
-    return items.find((item) => item.id === target.id);
-  }
-
-  return items;
-});
-
-ipcMain.handle("updateStoreValue", (event, item, newValue) => {
-  const items = store.get(item);
-
-  const itemsUpdated = items.map((item) => {
-    if (item.id === newValue.id) {
-      return newValue;
-    }
-
-    return item;
-  });
-
-  return store.set(item, itemsUpdated);
-});
-
-ipcMain.handle("deleteStoreValue", (event, item, target = null) => {
-  if (!target) {
-    return store.delete(item);
-  }
-
-  const items = store.get(item);
-
-  const itemsWithoutTheTarget = items.filter((item) => item.id !== target.id);
-
-  return store.set(item, itemsWithoutTheTarget);
-});
+//Initialize events
+require("./modules/threads")(ipcMain, store);

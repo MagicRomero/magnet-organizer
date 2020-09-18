@@ -1,23 +1,41 @@
 import React, { useState, useEffect } from "react";
+import url from "url";
+import { formatDistance } from "date-fns";
 import MaterialTable from "material-table";
 import DatabaseHandler from "../database/DatabaseHandler";
 import MagnetModal from "./MagnetModal";
-import { saveAs } from "file-saver";
+import { downloadImage, getFileName } from "../utils";
 
 const MagnetTable = () => {
   const [showModal, setShowModal] = useState(false);
-  const [magnets, setMagnets] = useState([]);
+  const [storeData, setStoreData] = useState({
+    magnets: [],
+    authors: [],
+    countries: [],
+  });
   const [selectedMagnet, setSelectedMagnet] = useState(undefined);
 
   useEffect(() => {
-    (async () => {
-      await fetchMagnets();
+    (() => {
+      fetchLocalStoreData(["magnets", "authors", "countries"]);
     })();
   }, []);
 
-  const fetchMagnets = async () => {
-    const magnets = await DatabaseHandler.getStoreValue("magnets");
-    setMagnets(magnets);
+  const fetchLocalStoreData = async (keys = []) => {
+    if (keys && Array.isArray(keys) && keys.length > 0) {
+      const result = { ...storeData };
+
+      const promises = await keys.map(async (key) => {
+        const data = await DatabaseHandler.getStoreValue(key);
+        result[key] = data;
+
+        return key;
+      });
+
+      await Promise.all(promises);
+
+      setStoreData(result);
+    }
   };
 
   const handleMagnetSubmit = (magnet) => {
@@ -25,21 +43,21 @@ const MagnetTable = () => {
   };
 
   const addNewMagnet = async (newMagnet) => {
-    const new_magnets = magnets.concat([newMagnet]);
+    const new_magnets = storeData.magnets.concat([newMagnet]);
 
     await DatabaseHandler.setStoreValue("magnets", new_magnets);
-    fetchMagnets();
+    fetchLocalStoreData(["magnets"]);
   };
 
   const updateMagnet = async (updatedMagnet) => {
     await DatabaseHandler.updateStoreValue("magnets", updatedMagnet);
-    fetchMagnets();
+    fetchLocalStoreData(["magnets"]);
   };
 
   const deleteMagnet = async (event, magnetToDelete) => {
     if (window.confirm(`¿Quieres borrar el iman "${magnetToDelete.name}"?`)) {
       await DatabaseHandler.deleteStoreValue("magnets", magnetToDelete);
-      fetchMagnets();
+      fetchLocalStoreData(["magnets"]);
     }
   };
 
@@ -54,13 +72,6 @@ const MagnetTable = () => {
     }
 
     setShowModal(!showModal);
-  };
-
-  const downloadImage = (event, magnet) => {
-    console.log("magnet data: ", magnet);
-    if (magnet.image) {
-      saveAs(magnet.image, magnet.name + ".png");
-    }
   };
 
   return (
@@ -90,23 +101,48 @@ const MagnetTable = () => {
           {
             title: "Imagen",
             field: "image",
-            render: (rowData) => (
-              <img
-                onClick={(event) => downloadImage(event, rowData)}
-                alt={rowData.name}
-                src={rowData.image}
-                style={{
-                  cursor: "pointer",
-                  width: 150,
-                  height: "auto",
-                }}
-              />
-            ),
+            render: (rowData) => {
+              if (rowData.image) {
+                return (
+                  <img
+                    onClick={(event) =>
+                      downloadImage(rowData.image, getFileName(rowData.image))
+                    }
+                    alt={rowData.name}
+                    src={url.format({
+                      pathname: rowData.image,
+                      protocol: "file",
+                      slashes: true,
+                    })}
+                    style={{
+                      cursor: "pointer",
+                      width: 150,
+                      height: "auto",
+                    }}
+                  />
+                );
+              }
+
+              return "no image";
+            },
           },
+          { title: "País", field: "country" },
           { title: "Nombre", field: "name" },
-          { title: "Fecha", field: "date" },
+          {
+            title: "Persona",
+            field: "author",
+          },
+          {
+            title: "Fecha",
+            field: "date",
+            render: (rowData) => {
+              return formatDistance(new Date(rowData.date), new Date(), {
+                addSuffix: true,
+              });
+            },
+          },
         ]}
-        data={magnets}
+        data={storeData["magnets"]}
         title="Lista de imanes conseguidos"
         options={{
           actionsColumnIndex: -1,
@@ -134,8 +170,9 @@ const MagnetTable = () => {
         isOpen={showModal}
         handleShowModal={handleShowModal}
         selectedMagnet={selectedMagnet}
-        magnets={magnets}
         handleSubmit={handleMagnetSubmit}
+        countries={storeData.countries}
+        authors={storeData.authors}
       />
     </div>
   );

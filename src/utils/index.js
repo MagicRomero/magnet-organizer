@@ -1,3 +1,5 @@
+import { saveAs } from "file-saver";
+
 export const saveImageToLocalPath = (file) => {
   const fs = window.require("fs");
   const { app } = window.require("electron").remote;
@@ -17,3 +19,9 @@ export const saveImageToLocalPath = (file) => {
     );
   };
 };
+
+export const downloadImage = (path, name) => {
+  return saveAs(path, name);
+};
+
+export const getFileName = (path) => path.substr(path.lastIndexOf("/") + 1);

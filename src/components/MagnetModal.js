@@ -17,6 +17,9 @@ import {
   CardContent,
   CardActions,
   CardActionArea,
+  Select,
+  MenuItem,
+  Divider,
 } from "@material-ui/core";
 import {
   MuiPickersUtilsProvider,
@@ -29,6 +32,8 @@ const MagnetModal = ({
   isOpen,
   handleShowModal,
   handleSubmit,
+  authors,
+  countries,
   selectedMagnet,
 }) => {
   useEffect(() => {
@@ -55,8 +60,13 @@ const MagnetModal = ({
 
   const handleImageUpload = (event) => {
     if (event.target.files[0]) {
+      const { app } = window.require("electron").remote;
       const uploadedFile = event.target.files[0];
       const src = URL.createObjectURL(uploadedFile);
+
+      const imagePath = `${app.getAppPath("userData")}/public/images/${
+        uploadedFile.name
+      }`;
 
       setUploadedFile({
         data: uploadedFile,
@@ -64,7 +74,7 @@ const MagnetModal = ({
       });
       setForm({
         ...form,
-        image: src,
+        image: imagePath,
       });
     } else {
       URL.revokeObjectURL(file.src);
@@ -105,7 +115,7 @@ const MagnetModal = ({
       <Fade in={isOpen}>
         <Paper style={{ width: 600, padding: "2.5em", height: "auto" }}>
           <form onSubmit={handleFormSubmit} noValidate autoComplete="off">
-            <FormControl fullWidth>
+            <FormControl required fullWidth>
               <InputLabel htmlFor="name">Nombre iman</InputLabel>
               <Input
                 autoFocus
@@ -119,6 +129,60 @@ const MagnetModal = ({
               />
             </FormControl>
 
+            <FormControl required fullWidth style={{ margin: "1em" }}>
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <KeyboardDatePicker
+                  name="date"
+                  variant="inline"
+                  format="MM/dd/yyyy"
+                  margin="normal"
+                  id="date-picker-inline"
+                  label="Fecha"
+                  value={form.date}
+                  onChange={handleDateChange}
+                  KeyboardButtonProps={{
+                    "aria-label": "change date",
+                  }}
+                />
+              </MuiPickersUtilsProvider>
+            </FormControl>
+            <FormControl required fullWidth>
+              <InputLabel id="country-selector">País</InputLabel>
+              <Select
+                autoWidth
+                id="country"
+                name="country"
+                value={form.country}
+                onChange={handleInputChange}
+                labelId="country-selector"
+              >
+                {countries.map((country) => (
+                  <MenuItem key={country.iso_code} value={country.name}>
+                    {country.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="author-selector">Persona</InputLabel>
+              <Select
+                autoWidth
+                id="author"
+                name="author"
+                value={form.author}
+                onChange={handleInputChange}
+                labelId="author-selector"
+              >
+                <MenuItem value="">
+                  <em>Ninguno</em>
+                </MenuItem>
+                {authors.map((author) => (
+                  <MenuItem key={author.id} value={author.name}>
+                    {author.name} - {author.category}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <FormControl
               fullWidth
               style={{ marginBottom: "1em", padding: "1.5em" }}
@@ -127,8 +191,10 @@ const MagnetModal = ({
                 <Card>
                   <CardActionArea>
                     <CardMedia
-                      style={{ height: "200" }}
-                      src={file.src}
+                      alt={file.data.name}
+                      height="150"
+                      component="img"
+                      image={file.src}
                       title={file.data.name}
                     />
                     <CardContent>
@@ -172,24 +238,7 @@ const MagnetModal = ({
                 </Fragment>
               )}
             </FormControl>
-
-            <FormControl fullWidth style={{ margin: "1em" }}>
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <KeyboardDatePicker
-                  name="date"
-                  variant="inline"
-                  format="MM/dd/yyyy"
-                  margin="normal"
-                  id="date-picker-inline"
-                  label="Date picker inline"
-                  value={form.date}
-                  onChange={handleDateChange}
-                  KeyboardButtonProps={{
-                    "aria-label": "change date",
-                  }}
-                />
-              </MuiPickersUtilsProvider>
-            </FormControl>
+            <Divider style={{ margin: "2em" }} />
             <Button
               fullWidth
               style={{ marginTop: "1em" }}
@@ -213,6 +262,8 @@ MagnetModal.defaultProps = {
     name: "",
     date: new Date().toJSON(),
     image: null,
+    author: "",
+    country: "",
   },
 };
 
