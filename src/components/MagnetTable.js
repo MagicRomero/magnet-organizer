@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import url from "url";
 import { formatDistance } from "date-fns";
 import MaterialTable from "material-table";
 import DatabaseHandler from "../database/DatabaseHandler";
 import MagnetModal from "./MagnetModal";
-import { downloadImage, getFileName } from "../utils";
+import { downloadImage, getFileName, fetchLocalStoreData } from "../utils";
 
 const MagnetTable = () => {
   const [showModal, setShowModal] = useState(false);
@@ -17,25 +17,14 @@ const MagnetTable = () => {
 
   useEffect(() => {
     (() => {
-      fetchLocalStoreData(["magnets", "authors", "countries"]);
+      fetchStoreData(["magnets", "authors", "countries"]);
     })();
   }, []);
 
-  const fetchLocalStoreData = async (keys = []) => {
-    if (keys && Array.isArray(keys) && keys.length > 0) {
-      const result = { ...storeData };
-
-      const promises = await keys.map(async (key) => {
-        const data = await DatabaseHandler.getStoreValue(key);
-        result[key] = data;
-
-        return key;
-      });
-
-      await Promise.all(promises);
-
-      setStoreData(result);
-    }
+  const fetchStoreData = async (keys) => {
+    const result = await fetchLocalStoreData(keys);
+    console.log("RESULT: ", result);
+    setStoreData({ ...storeData, ...result });
   };
 
   const handleMagnetSubmit = (magnet) => {
@@ -46,18 +35,18 @@ const MagnetTable = () => {
     const new_magnets = storeData.magnets.concat([newMagnet]);
 
     await DatabaseHandler.setStoreValue("magnets", new_magnets);
-    fetchLocalStoreData(["magnets"]);
+    fetchStoreData(["magnets"]);
   };
 
   const updateMagnet = async (updatedMagnet) => {
     await DatabaseHandler.updateStoreValue("magnets", updatedMagnet);
-    fetchLocalStoreData(["magnets"]);
+    fetchStoreData(["magnets"]);
   };
 
   const deleteMagnet = async (event, magnetToDelete) => {
     if (window.confirm(`¿Quieres borrar el iman "${magnetToDelete.name}"?`)) {
       await DatabaseHandler.deleteStoreValue("magnets", magnetToDelete);
-      fetchLocalStoreData(["magnets"]);
+      fetchStoreData(["magnets"]);
     }
   };
 

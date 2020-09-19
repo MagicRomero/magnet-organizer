@@ -4,6 +4,8 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
+require("v8-compile-cache");
+
 ReactDOM.render(
   <React.StrictMode>
     <CssBaseline>

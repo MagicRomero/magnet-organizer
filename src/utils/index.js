@@ -1,4 +1,24 @@
 import { saveAs } from "file-saver";
+import DatabaseHandler from "../database/DatabaseHandler";
+
+export const fetchLocalStoreData = async (keys = []) => {
+  if (keys && Array.isArray(keys) && keys.length > 0) {
+    const result = {};
+
+    const promises = await keys.map(async (key) => {
+      const data = await DatabaseHandler.getStoreValue(key);
+      result[key] = data;
+
+      return key;
+    });
+
+    await Promise.all(promises);
+
+    return result;
+  }
+
+  return [];
+};
 
 export const saveImageToLocalPath = (file) => {
   const fs = window.require("fs");

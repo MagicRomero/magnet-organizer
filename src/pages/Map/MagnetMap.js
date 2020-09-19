@@ -1,7 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Container, Paper } from "@material-ui/core";
 
 const MagnetMap = () => {
-  return <div>magnet map</div>;
+  return (
+    <Container>
+      <Paper>mapita</Paper>
+    </Container>
+  );
 };
 
 export default MagnetMap;

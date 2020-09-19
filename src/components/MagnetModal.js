@@ -1,4 +1,5 @@
 import React, { Fragment, useEffect, useState } from "react";
+import ReactCountryFlag from "react-country-flag";
 import shortid from "shortid";
 
 import DateFnsUtils from "@date-io/date-fns";
@@ -158,12 +159,25 @@ const MagnetModal = ({
               >
                 {countries.map((country) => (
                   <MenuItem key={country.iso_code} value={country.name}>
-                    {country.name}
+                    <ReactCountryFlag
+                      title={country.iso_code}
+                      ariaLabel={country.name}
+                      countryCode={country.iso_code}
+                      style={{
+                        fontSize: "2em",
+                        lineHeight: "2em",
+                        marginRight: "1em",
+                      }}
+                      svg
+                    />{" "}
+                    <Typography variant="h6" component="h2">
+                      {country.name}
+                    </Typography>
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <FormControl fullWidth>
+            <FormControl style={{ margin: "2em 0" }} fullWidth>
               <InputLabel id="author-selector">Persona</InputLabel>
               <Select
                 autoWidth
